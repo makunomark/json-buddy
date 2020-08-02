@@ -1,6 +1,7 @@
 package me.gachoka.buddy.data.repository
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import me.gachoka.buddy.data.local.dao.PostDao
 import me.gachoka.buddy.data.local.entity.PostEntity
 import me.gachoka.buddy.data.remote.api.BuddyApi
@@ -12,9 +13,9 @@ import retrofit2.Response
 import javax.inject.Inject
 
 interface PostRepository {
-    fun getRemotePosts()
-    fun getLocalPosts()
-    fun savePosts(vararg posts: PostEntity)
+    suspend fun getLocalPosts(): List<PostEntity>
+    suspend fun savePosts(vararg posts: PostEntity)
+    fun getRemotePosts(operation: (Array<PostEntity>) -> Unit)
 }
 
 class PostRepositoryImpl
@@ -23,7 +24,7 @@ class PostRepositoryImpl
     private val postDao: PostDao
 ) : PostRepository {
 
-    override fun getRemotePosts() {
+    override fun getRemotePosts(operation: (Array<PostEntity>) -> Unit) {
         buddyApi.getPosts().enqueue(object : Callback<List<PostsResponse>> {
             override fun onFailure(call: Call<List<PostsResponse>>, t: Throwable) {
                 t.printStackTrace()
@@ -35,17 +36,17 @@ class PostRepositoryImpl
                 response: Response<List<PostsResponse>>
             ) {
                 response.body()?.toListOfEntity()?.toTypedArray()?.let {
-                    if (it.isNotEmpty()) savePosts(*it)
+                    if (it.isNotEmpty()) operation(it)
                 }
             }
         })
     }
 
-    override fun getLocalPosts() {
-
+    override suspend fun getLocalPosts(): List<PostEntity> {
+        return postDao.getAllPosts()
     }
 
-    override fun savePosts(vararg posts: PostEntity) {
+    override suspend fun savePosts(vararg posts: PostEntity) {
         postDao.insert(*posts)
     }
 }
