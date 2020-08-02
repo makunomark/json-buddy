@@ -24,7 +24,7 @@ object NetworkModule {
     }
 
     @Provides
-    fun provideBuddyUrl(retrofit: Retrofit): BuddyApi {
+    fun provideBuddyApi(retrofit: Retrofit): BuddyApi {
         return retrofit.create(BuddyApi::class.java)
     }
 }
