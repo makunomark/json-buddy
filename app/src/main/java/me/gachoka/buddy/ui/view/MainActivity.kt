@@ -1,4 +1,4 @@
-package me.gachoka.buddy.ui
+package me.gachoka.buddy.ui.view
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
